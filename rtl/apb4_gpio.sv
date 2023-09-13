@@ -20,18 +20,19 @@
 // MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
 // See the Mulan PSL v2 for more details.
 
-`define REG_PADDIR 4'b0000 //BASEADDR+0x00
-`define REG_PADIN 4'b0001 //BASEADDR+0x04
-`define REG_PADOUT 4'b0010 //BASEADDR+0x08
-`define REG_INTEN 4'b0011 //BASEADDR+0x0C
-`define REG_INTTYPE0 4'b0100 //BASEADDR+0x10
-`define REG_INTTYPE1 4'b0101 //BASEADDR+0x14
+// verilog_format: off
+`define REG_PADDIR    4'b0000 //BASEADDR+0x00
+`define REG_PADIN     4'b0001 //BASEADDR+0x04
+`define REG_PADOUT    4'b0010 //BASEADDR+0x08
+`define REG_INTEN     4'b0011 //BASEADDR+0x0C
+`define REG_INTTYPE0  4'b0100 //BASEADDR+0x10
+`define REG_INTTYPE1  4'b0101 //BASEADDR+0x14
 `define REG_INTSTATUS 4'b0110 //BASEADDR+0x18
-`define REG_IOFCFG 4'b0111 //BASEADDR+0x1C
-
+`define REG_IOFCFG    4'b0111 //BASEADDR+0x1C
+// verilog_format: on
 
 module apb4_gpio #(
-    parameter GPIO_NUM = 32 // <= 32
+    parameter GPIO_NUM = 32
 ) (
            apb4_if                apb4,
     input  logic   [GPIO_NUM-1:0] gpio_in_i,
@@ -64,27 +65,27 @@ module apb4_gpio #(
 
   assign s_apb_addr = apb4.paddr[5:2];
   assign gpio_in_sync_o = r_gpio_sync1;
-  assign s_gpio_rise = r_gpio_sync1 & ~r_gpio_in;  //foreach input check if rising edge
-  assign s_gpio_fall = ~r_gpio_sync1 & r_gpio_in;  //foreach input check if falling edge
+  assign s_gpio_rise = r_gpio_sync1 & ~r_gpio_in;  // foreach input check if rising edge
+  assign s_gpio_fall = ~r_gpio_sync1 & r_gpio_in;  // foreach input check if falling edge
 
   assign s_is_int_rise = (r_gpio_inttype1 & ~r_gpio_inttype0) & s_gpio_rise;  // inttype 01 rise
   assign s_is_int_fall = (r_gpio_inttype1 & r_gpio_inttype0) & s_gpio_fall;  // inttype 00 fall
   assign s_is_int_lev0 = (~r_gpio_inttype1 & r_gpio_inttype0) & ~r_gpio_in;  // inttype 10 level 0
   assign s_is_int_lev1 = (~r_gpio_inttype1 & ~r_gpio_inttype0) & r_gpio_in;  // inttype 11 level 1
 
-  //check if bit if irq_o is enable and if irq_o specified by inttype occurred
+  // check if bit if irq_o is enable and if irq_o specified by inttype occurred
   assign s_is_int_all  = r_gpio_inten & (((s_is_int_rise | s_is_int_fall) | s_is_int_lev0) | s_is_int_lev1);
-  //is any bit enabled and specified irq_o happened?
+  // is any bit enabled and specified irq_o happened?
   assign s_rise_int = |s_is_int_all;
 
   always_ff @(posedge apb4.hclk, negedge apb4.hresetn) begin
     if (~apb4.hresetn) begin
       irq_o    <= 1'b0;
       r_status <= 'h0;
-    end else if (!irq_o && s_rise_int) begin  //rise irq_o if not already rise
+    end else if (!irq_o && s_rise_int) begin  // rise irq_o if not already rise
       irq_o    <= 1'b1;
       r_status <= s_is_int_all;
-    end else if ((((irq_o && apb4.psel) && apb4.penable) && !apb4.pwrite) && (s_apb_addr == `REG_INTSTATUS)) begin    //clears int if status is read
+    end else if ((((irq_o && apb4.psel) && apb4.penable) && !apb4.pwrite) && (s_apb_addr == `REG_INTSTATUS)) begin //clears int if status is read
       irq_o    <= 1'b0;
       r_status <= 'h0;
     end
@@ -96,9 +97,9 @@ module apb4_gpio #(
       r_gpio_sync1 <= 'h0;
       r_gpio_in    <= 'h0;
     end else begin
-      r_gpio_sync0 <= gpio_in_i;  //first 2 sync for metastability resolving
+      r_gpio_sync0 <= gpio_in_i;  // first 2 sync for metastability resolving
       r_gpio_sync1 <= r_gpio_sync0;
-      r_gpio_in    <= r_gpio_sync1;  //last reg used for edge detection
+      r_gpio_in    <= r_gpio_sync1;  // last reg used for edge detection
     end
   end
 
