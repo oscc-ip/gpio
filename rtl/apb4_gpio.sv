@@ -21,14 +21,14 @@
 // See the Mulan PSL v2 for more details.
 
 // verilog_format: off
-`define REG_PADDIR    4'b0000 //BASEADDR+0x00
-`define REG_PADIN     4'b0001 //BASEADDR+0x04
-`define REG_PADOUT    4'b0010 //BASEADDR+0x08
-`define REG_INTEN     4'b0011 //BASEADDR+0x0C
-`define REG_INTTYPE0  4'b0100 //BASEADDR+0x10
-`define REG_INTTYPE1  4'b0101 //BASEADDR+0x14
-`define REG_INTSTATUS 4'b0110 //BASEADDR+0x18
-`define REG_IOFCFG    4'b0111 //BASEADDR+0x1C
+`define GPIO_PADDIR    4'b0000 //BASEADDR+0x00
+`define GPIO_PADIN     4'b0001 //BASEADDR+0x04
+`define GPIO_PADOUT    4'b0010 //BASEADDR+0x08
+`define GPIO_INTEN     4'b0011 //BASEADDR+0x0C
+`define GPIO_INTTYPE0  4'b0100 //BASEADDR+0x10
+`define GPIO_INTTYPE1  4'b0101 //BASEADDR+0x14
+`define GPIO_INTSTATUS 4'b0110 //BASEADDR+0x18
+`define GPIO_IOFCFG    4'b0111 //BASEADDR+0x1C
 // verilog_format: on
 
 module apb4_gpio #(
@@ -85,7 +85,7 @@ module apb4_gpio #(
     end else if (!irq_o && s_rise_int) begin  // rise irq_o if not already rise
       irq_o    <= 1'b1;
       r_status <= s_is_int_all;
-    end else if ((((irq_o && apb4.psel) && apb4.penable) && !apb4.pwrite) && (s_apb_addr == `REG_INTSTATUS)) begin //clears int if status is read
+    end else if ((((irq_o && apb4.psel) && apb4.penable) && !apb4.pwrite) && (s_apb_addr == `GPIO_INTSTATUS)) begin //clears int if status is read
       irq_o    <= 1'b0;
       r_status <= 'h0;
     end
@@ -113,26 +113,26 @@ module apb4_gpio #(
       r_iofcfg        <= 'b0;
     end else if ((apb4.psel && apb4.penable) && apb4.pwrite) begin
       case (s_apb_addr)
-        `REG_PADDIR:   r_gpio_dir <= apb4.pwdata;
-        `REG_PADOUT:   r_gpio_out <= apb4.pwdata;
-        `REG_INTEN:    r_gpio_inten <= apb4.pwdata;
-        `REG_INTTYPE0: r_gpio_inttype0 <= apb4.pwdata;
-        `REG_INTTYPE1: r_gpio_inttype1 <= apb4.pwdata;
-        `REG_IOFCFG:   r_iofcfg <= apb4.pwdata;
+        `GPIO_PADDIR:   r_gpio_dir <= apb4.pwdata;
+        `GPIO_PADOUT:   r_gpio_out <= apb4.pwdata;
+        `GPIO_INTEN:    r_gpio_inten <= apb4.pwdata;
+        `GPIO_INTTYPE0: r_gpio_inttype0 <= apb4.pwdata;
+        `GPIO_INTTYPE1: r_gpio_inttype1 <= apb4.pwdata;
+        `GPIO_IOFCFG:   r_iofcfg <= apb4.pwdata;
       endcase
     end
   end
 
   always_comb begin
     unique case (s_apb_addr)
-      `REG_PADDIR:    apb4.prdata = r_gpio_dir;
-      `REG_PADIN:     apb4.prdata = r_gpio_in;
-      `REG_PADOUT:    apb4.prdata = r_gpio_out;
-      `REG_INTEN:     apb4.prdata = r_gpio_inten;
-      `REG_INTTYPE0:  apb4.prdata = r_gpio_inttype0;
-      `REG_INTTYPE1:  apb4.prdata = r_gpio_inttype1;
-      `REG_INTSTATUS: apb4.prdata = r_status;
-      `REG_IOFCFG:    apb4.prdata = r_iofcfg;
+      `GPIO_PADDIR:    apb4.prdata = r_gpio_dir;
+      `GPIO_PADIN:     apb4.prdata = r_gpio_in;
+      `GPIO_PADOUT:    apb4.prdata = r_gpio_out;
+      `GPIO_INTEN:     apb4.prdata = r_gpio_inten;
+      `GPIO_INTTYPE0:  apb4.prdata = r_gpio_inttype0;
+      `GPIO_INTTYPE1:  apb4.prdata = r_gpio_inttype1;
+      `GPIO_INTSTATUS: apb4.prdata = r_status;
+      `GPIO_IOFCFG:    apb4.prdata = r_iofcfg;
       default:        apb4.prdata = 'h0;
     endcase
   end
