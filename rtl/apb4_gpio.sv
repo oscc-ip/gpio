@@ -34,7 +34,9 @@
 module apb4_gpio #(
     parameter GPIO_NUM = 32
 ) (
-           apb4_if                apb4,
+    // verilog_format: off
+    apb4_if                       apb4,
+    // verilog_format: on
     input  logic   [GPIO_NUM-1:0] gpio_in_i,
     output logic   [GPIO_NUM-1:0] gpio_in_sync_o,
     output logic   [GPIO_NUM-1:0] gpio_out_o,
@@ -81,21 +83,21 @@ module apb4_gpio #(
   always_ff @(posedge apb4.hclk, negedge apb4.hresetn) begin
     if (~apb4.hresetn) begin
       irq_o    <= 1'b0;
-      r_status <= 'h0;
+      r_status <= '0;
     end else if (!irq_o && s_rise_int) begin  // rise irq_o if not already rise
       irq_o    <= 1'b1;
       r_status <= s_is_int_all;
     end else if ((((irq_o && apb4.psel) && apb4.penable) && !apb4.pwrite) && (s_apb_addr == `GPIO_INTSTATUS)) begin //clears int if status is read
       irq_o    <= 1'b0;
-      r_status <= 'h0;
+      r_status <= '0;
     end
   end
 
   always_ff @(posedge apb4.hclk or negedge apb4.hresetn) begin
     if (~apb4.hresetn) begin
-      r_gpio_sync0 <= 'h0;
-      r_gpio_sync1 <= 'h0;
-      r_gpio_in    <= 'h0;
+      r_gpio_sync0 <= '0;
+      r_gpio_sync1 <= '0;
+      r_gpio_in    <= '0;
     end else begin
       r_gpio_sync0 <= gpio_in_i;  // first 2 sync for metastability resolving
       r_gpio_sync1 <= r_gpio_sync0;
@@ -105,14 +107,14 @@ module apb4_gpio #(
 
   always_ff @(posedge apb4.hclk, negedge apb4.hresetn) begin
     if (~apb4.hresetn) begin
-      r_gpio_inten    <= 'b0;
-      r_gpio_inttype0 <= 'b0;
-      r_gpio_inttype1 <= 'b0;
-      r_gpio_out      <= 'b0;
-      r_gpio_dir      <= 'b0;
-      r_iofcfg        <= 'b0;
+      r_gpio_inten    <= '0;
+      r_gpio_inttype0 <= '0;
+      r_gpio_inttype1 <= '0;
+      r_gpio_out      <= '0;
+      r_gpio_dir      <= '0;
+      r_iofcfg        <= '0;
     end else if ((apb4.psel && apb4.penable) && apb4.pwrite) begin
-      case (s_apb_addr)
+      unique case (s_apb_addr)
         `GPIO_PADDIR:   r_gpio_dir <= apb4.pwdata;
         `GPIO_PADOUT:   r_gpio_out <= apb4.pwdata;
         `GPIO_INTEN:    r_gpio_inten <= apb4.pwdata;
@@ -133,7 +135,7 @@ module apb4_gpio #(
       `GPIO_INTTYPE1:  apb4.prdata = r_gpio_inttype1;
       `GPIO_INTSTATUS: apb4.prdata = r_status;
       `GPIO_IOFCFG:    apb4.prdata = r_iofcfg;
-      default:        apb4.prdata = 'h0;
+      default:         apb4.prdata = '0;
     endcase
   end
 
