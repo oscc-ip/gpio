@@ -32,10 +32,10 @@
 // verilog_format: on
 
 module apb4_gpio #(
-    parameter GPIO_NUM = 32
+    parameter int GPIO_NUM = 32
 ) (
     // verilog_format: off
-    apb4_if                       apb4,
+    apb4_if.slave                 apb4,
     // verilog_format: on
     input  logic   [GPIO_NUM-1:0] gpio_in_i,
     output logic   [GPIO_NUM-1:0] gpio_in_sync_o,
@@ -64,8 +64,11 @@ module apb4_gpio #(
   logic        s_rise_int;
   logic [ 3:0] s_apb_addr;
   logic [31:0] r_status;
+  logic s_apb4_wr_hdshk, s_apb4_rd_hdshk;
 
   assign s_apb_addr = apb4.paddr[5:2];
+  assign s_apb4_wr_hdshk = apb4.psel && apb4.penable && apb4.pwrite;
+  assign s_apb4_rd_hdshk = apb4.psel && apb4.penable && (~apb4.pwrite);
   assign gpio_in_sync_o = r_gpio_sync1;
   assign s_gpio_rise = r_gpio_sync1 & ~r_gpio_in;  // foreach input check if rising edge
   assign s_gpio_fall = ~r_gpio_sync1 & r_gpio_in;  // foreach input check if falling edge
@@ -113,7 +116,7 @@ module apb4_gpio #(
       r_gpio_out      <= '0;
       r_gpio_dir      <= '0;
       r_iofcfg        <= '0;
-    end else if ((apb4.psel && apb4.penable) && apb4.pwrite) begin
+    end else if (s_apb4_wr_hdshk) begin
       unique case (s_apb_addr)
         `GPIO_PADDIR:   r_gpio_dir <= apb4.pwdata;
         `GPIO_PADOUT:   r_gpio_out <= apb4.pwdata;
@@ -126,17 +129,19 @@ module apb4_gpio #(
   end
 
   always_comb begin
-    unique case (s_apb_addr)
-      `GPIO_PADDIR:    apb4.prdata = r_gpio_dir;
-      `GPIO_PADIN:     apb4.prdata = r_gpio_in;
-      `GPIO_PADOUT:    apb4.prdata = r_gpio_out;
-      `GPIO_INTEN:     apb4.prdata = r_gpio_inten;
-      `GPIO_INTTYPE0:  apb4.prdata = r_gpio_inttype0;
-      `GPIO_INTTYPE1:  apb4.prdata = r_gpio_inttype1;
-      `GPIO_INTSTATUS: apb4.prdata = r_status;
-      `GPIO_IOFCFG:    apb4.prdata = r_iofcfg;
-      default:         apb4.prdata = '0;
-    endcase
+    apb4.prdata = '0;
+    if (s_apb4_rd_hdshk) begin
+      unique case (s_apb_addr)
+        `GPIO_PADDIR:    apb4.prdata = r_gpio_dir;
+        `GPIO_PADIN:     apb4.prdata = r_gpio_in;
+        `GPIO_PADOUT:    apb4.prdata = r_gpio_out;
+        `GPIO_INTEN:     apb4.prdata = r_gpio_inten;
+        `GPIO_INTTYPE0:  apb4.prdata = r_gpio_inttype0;
+        `GPIO_INTTYPE1:  apb4.prdata = r_gpio_inttype1;
+        `GPIO_INTSTATUS: apb4.prdata = r_status;
+        `GPIO_IOFCFG:    apb4.prdata = r_iofcfg;
+      endcase
+    end
   end
 
   assign gpio_iof_o  = r_iofcfg;
