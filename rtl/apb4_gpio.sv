@@ -83,8 +83,8 @@ module apb4_gpio #(
   // is any bit enabled and specified irq_o happened?
   assign s_rise_int = |s_is_int_all;
 
-  always_ff @(posedge apb4.hclk, negedge apb4.hresetn) begin
-    if (~apb4.hresetn) begin
+  always_ff @(posedge apb4.pclk, negedge apb4.presetn) begin
+    if (~apb4.presetn) begin
       irq_o    <= 1'b0;
       r_status <= '0;
     end else if (!irq_o && s_rise_int) begin  // rise irq_o if not already rise
@@ -96,8 +96,8 @@ module apb4_gpio #(
     end
   end
 
-  always_ff @(posedge apb4.hclk or negedge apb4.hresetn) begin
-    if (~apb4.hresetn) begin
+  always_ff @(posedge apb4.pclk or negedge apb4.presetn) begin
+    if (~apb4.presetn) begin
       r_gpio_sync0 <= '0;
       r_gpio_sync1 <= '0;
       r_gpio_in    <= '0;
@@ -108,8 +108,8 @@ module apb4_gpio #(
     end
   end
 
-  always_ff @(posedge apb4.hclk, negedge apb4.hresetn) begin
-    if (~apb4.hresetn) begin
+  always_ff @(posedge apb4.pclk, negedge apb4.presetn) begin
+    if (~apb4.presetn) begin
       r_gpio_inten    <= '0;
       r_gpio_inttype0 <= '0;
       r_gpio_inttype1 <= '0;
