@@ -21,50 +21,97 @@
 // See the Mulan PSL v2 for more details.
 
 // verilog_format: off
-`define GPIO_PADDIR    4'b0000 //BASEADDR+0x00
-`define GPIO_PADIN     4'b0001 //BASEADDR+0x04
-`define GPIO_PADOUT    4'b0010 //BASEADDR+0x08
-`define GPIO_INTEN     4'b0011 //BASEADDR+0x0C
-`define GPIO_INTTYPE0  4'b0100 //BASEADDR+0x10
-`define GPIO_INTTYPE1  4'b0101 //BASEADDR+0x14
-`define GPIO_INTSTATUS 4'b0110 //BASEADDR+0x18
-`define GPIO_IOFCFG    4'b0111 //BASEADDR+0x1C
+`define GPIO_PADDIR    4'b0000 // BASEADDR + 0x00
+`define GPIO_PADIN     4'b0001 // BASEADDR + 0x04
+`define GPIO_PADOUT    4'b0010 // BASEADDR + 0x08
+`define GPIO_INTEN     4'b0011 // BASEADDR + 0x0C
+`define GPIO_INTTYPE0  4'b0100 // BASEADDR + 0x10
+`define GPIO_INTTYPE1  4'b0101 // BASEADDR + 0x14
+`define GPIO_INTSTATUS 4'b0110 // BASEADDR + 0x18
+`define GPIO_IOFCFG    4'b0111 // BASEADDR + 0x1C
 // verilog_format: on
+
+/* register mapping
+ * GPIO_PADDIR:
+ * BITS:   | 31:GPIO_NUM | GPIO_NUM-1:0 |
+ * FIELDS: | RES         | DIR          |
+ * PERMS:  | NONE        | RW           |
+ * --------------------------------------
+ * GPIO_PADIN:
+ * BITS:   | 31:GPIO_NUM | GPIO_NUM-1:0 |
+ * FIELDS: | RES         | IN           |
+ * PERMS:  | NONE        | R            |
+ * --------------------------------------
+ * GPIO_PADOUT:
+ * BITS:   | 31:GPIO_NUM | GPIO_NUM-1:0 |
+ * FIELDS: | RES         | OUT          |
+ * PERMS:  | NONE        | RW           |
+ * --------------------------------------
+ * GPIO_INTEN:
+ * BITS:   | 31:GPIO_NUM | GPIO_NUM-1:0 |
+ * FIELDS: | RES         | INTEN        |
+ * PERMS:  | NONE        | RW           |
+ * --------------------------------------
+ * GPIO_INTTYPE0:
+ * BITS:   | 31:GPIO_NUM | GPIO_NUM-1:0 |
+ * FIELDS: | RES         | INTTYPE0     |
+ * PERMS:  | NONE        | RW           |
+ * --------------------------------------
+ * GPIO_INTTYPE1:
+ * BITS:   | 31:GPIO_NUM | GPIO_NUM-1:0 |
+ * FIELDS: | RES         | INTTYPE1     |
+ * PERMS:  | NONE        | RW           |
+ * --------------------------------------
+ * GPIO_INTSTATUS:
+ * BITS:   | 31:GPIO_NUM | GPIO_NUM-1:0 |
+ * FIELDS: | RES         | INTSTATUS    |
+ * PERMS:  | NONE        | R            |
+ * --------------------------------------
+ * GPIO_IOFCFG:
+ * BITS:   | 31:GPIO_NUM | GPIO_NUM-1:0 |
+ * FIELDS: | RES         | IOCFG        |
+ * PERMS:  | NONE        | RW           |
+ * --------------------------------------
+*/
 
 module apb4_gpio #(
     parameter int GPIO_NUM = 32
 ) (
     // verilog_format: off
-    apb4_if.slave                 apb4,
+    apb4_if.slave               apb4,
     // verilog_format: on
-    input  logic   [GPIO_NUM-1:0] gpio_in_i,
-    output logic   [GPIO_NUM-1:0] gpio_in_sync_o,
-    output logic   [GPIO_NUM-1:0] gpio_out_o,
-    output logic   [GPIO_NUM-1:0] gpio_dir_o,
-    output logic   [GPIO_NUM-1:0] gpio_iof_o,
-    output logic                  irq_o
+    input  logic [GPIO_NUM-1:0] gpio_in_i,
+    output logic [GPIO_NUM-1:0] gpio_in_sync_o,
+    output logic [GPIO_NUM-1:0] gpio_out_o,
+    output logic [GPIO_NUM-1:0] gpio_dir_o,
+    output logic [GPIO_NUM-1:0] gpio_iof_o,
+    output logic                irq_o
 );
 
-  logic [31:0] r_gpio_inten;
-  logic [31:0] r_gpio_inttype0;
-  logic [31:0] r_gpio_inttype1;
-  logic [31:0] r_gpio_out;
-  logic [31:0] r_gpio_dir;
-  logic [31:0] r_gpio_sync0;
-  logic [31:0] r_gpio_sync1;
-  logic [31:0] r_gpio_in;
-  logic [31:0] r_iofcfg;
-  logic [31:0] s_gpio_rise;
-  logic [31:0] s_gpio_fall;
-  logic [31:0] s_is_int_rise;
-  logic [31:0] s_is_int_fall;
-  logic [31:0] s_is_int_lev0;
-  logic [31:0] s_is_int_lev1;
-  logic [31:0] s_is_int_all;
-  logic        s_rise_int;
-  logic [ 3:0] s_apb4_addr;
-  logic [31:0] r_status;
+  logic [3:0] s_apb4_addr;
   logic s_apb4_wr_hdshk, s_apb4_rd_hdshk;
+  logic [GPIO_NUM-1:0] r_gpio_inten;
+  logic [GPIO_NUM-1:0] r_gpio_inttype0;
+  logic [GPIO_NUM-1:0] r_gpio_inttype1;
+  logic [GPIO_NUM-1:0] r_gpio_out;
+  logic [GPIO_NUM-1:0] r_gpio_dir;
+  logic [GPIO_NUM-1:0] r_gpio_sync0;
+  logic [GPIO_NUM-1:0] r_gpio_sync1;
+  logic [GPIO_NUM-1:0] r_gpio_in;
+  logic [GPIO_NUM-1:0] r_iofcfg;
+  logic [GPIO_NUM-1:0] r_status;
+  logic [GPIO_NUM-1:0] s_gpio_rise;
+  logic [GPIO_NUM-1:0] s_gpio_fall;
+  logic [GPIO_NUM-1:0] s_is_int_rise;
+  logic [GPIO_NUM-1:0] s_is_int_fall;
+  logic [GPIO_NUM-1:0] s_is_int_lev0;
+  logic [GPIO_NUM-1:0] s_is_int_lev1;
+  logic [GPIO_NUM-1:0] s_is_int_all;
+  logic                s_rise_int;
+
+  if (GPIO_NUM < 1 || GPIO_NUM > 32) begin
+    $error("GPIO_NUM must be strictly larger than 0 and less than 33");
+  end
 
   assign s_apb4_addr = apb4.paddr[5:2];
   assign s_apb4_wr_hdshk = apb4.psel && apb4.penable && apb4.pwrite;
@@ -76,41 +123,41 @@ module apb4_gpio #(
   assign gpio_out_o = r_gpio_out;
   assign gpio_dir_o = r_gpio_dir;
   assign gpio_in_sync_o = r_gpio_sync1;
-  assign s_gpio_rise = r_gpio_sync1 & ~r_gpio_in;  // foreach input check if rising edge
-  assign s_gpio_fall = ~r_gpio_sync1 & r_gpio_in;  // foreach input check if falling edge
+  assign s_gpio_rise = r_gpio_sync1 & ~r_gpio_in;  // check if rising edge
+  assign s_gpio_fall = ~r_gpio_sync1 & r_gpio_in;  // check if falling edge
 
-  assign s_is_int_rise = (r_gpio_inttype1 & ~r_gpio_inttype0) & s_gpio_rise;  // inttype 01 rise
-  assign s_is_int_fall = (r_gpio_inttype1 & r_gpio_inttype0) & s_gpio_fall;  // inttype 00 fall
-  assign s_is_int_lev0 = (~r_gpio_inttype1 & r_gpio_inttype0) & ~r_gpio_in;  // inttype 10 level 0
-  assign s_is_int_lev1 = (~r_gpio_inttype1 & ~r_gpio_inttype0) & r_gpio_in;  // inttype 11 level 1
+  assign s_is_int_rise = (r_gpio_inttype1 & ~r_gpio_inttype0) & s_gpio_rise;
+  assign s_is_int_fall = (r_gpio_inttype1 & r_gpio_inttype0) & s_gpio_fall;
+  assign s_is_int_lev0 = (~r_gpio_inttype1 & r_gpio_inttype0) & ~r_gpio_in;
+  assign s_is_int_lev1 = (~r_gpio_inttype1 & ~r_gpio_inttype0) & r_gpio_in;
 
   // check if bit if irq_o is enable and if irq_o specified by inttype occurred
-  assign s_is_int_all  = r_gpio_inten & (((s_is_int_rise | s_is_int_fall) | s_is_int_lev0) | s_is_int_lev1);
-  // is any bit enabled and specified irq_o happened?
+  assign s_is_int_all  = r_gpio_inten & (s_is_int_rise | s_is_int_fall | s_is_int_lev0 | s_is_int_lev1);
   assign s_rise_int = |s_is_int_all;
 
   always_ff @(posedge apb4.pclk, negedge apb4.presetn) begin
     if (~apb4.presetn) begin
       irq_o    <= 1'b0;
       r_status <= '0;
-    end else if (!irq_o && s_rise_int) begin  // rise irq_o if not already rise
+    end else if (~irq_o && s_rise_int) begin  // rise irq_o if not already rise
       irq_o    <= 1'b1;
       r_status <= s_is_int_all;
-    end else if ((((irq_o && apb4.psel) && apb4.penable) && !apb4.pwrite) && (s_apb4_addr == `GPIO_INTSTATUS)) begin //clears int if status is read
+    end else if (irq_o && s_apb4_rd_hdshk && (s_apb4_addr == `GPIO_INTSTATUS)) begin //clears int if status is read
       irq_o    <= 1'b0;
       r_status <= '0;
     end
   end
 
-  always_ff @(posedge apb4.pclk or negedge apb4.presetn) begin
+  // first 2 sync for metastability resolving, last reg used for edge detection
+  always_ff @(posedge apb4.pclk, negedge apb4.presetn) begin
     if (~apb4.presetn) begin
       r_gpio_sync0 <= '0;
       r_gpio_sync1 <= '0;
       r_gpio_in    <= '0;
     end else begin
-      r_gpio_sync0 <= gpio_in_i;  // first 2 sync for metastability resolving
+      r_gpio_sync0 <= gpio_in_i;
       r_gpio_sync1 <= r_gpio_sync0;
-      r_gpio_in    <= r_gpio_sync1;  // last reg used for edge detection
+      r_gpio_in    <= r_gpio_sync1;
     end
   end
 
@@ -124,12 +171,12 @@ module apb4_gpio #(
       r_iofcfg        <= '0;
     end else if (s_apb4_wr_hdshk) begin
       unique case (s_apb4_addr)
-        `GPIO_PADDIR:   r_gpio_dir <= apb4.pwdata;
-        `GPIO_PADOUT:   r_gpio_out <= apb4.pwdata;
-        `GPIO_INTEN:    r_gpio_inten <= apb4.pwdata;
-        `GPIO_INTTYPE0: r_gpio_inttype0 <= apb4.pwdata;
-        `GPIO_INTTYPE1: r_gpio_inttype1 <= apb4.pwdata;
-        `GPIO_IOFCFG:   r_iofcfg <= apb4.pwdata;
+        `GPIO_PADDIR:   r_gpio_dir <= apb4.pwdata[GPIO_NUM-1:0];
+        `GPIO_PADOUT:   r_gpio_out <= apb4.pwdata[GPIO_NUM-1:0];
+        `GPIO_INTEN:    r_gpio_inten <= apb4.pwdata[GPIO_NUM-1:0];
+        `GPIO_INTTYPE0: r_gpio_inttype0 <= apb4.pwdata[GPIO_NUM-1:0];
+        `GPIO_INTTYPE1: r_gpio_inttype1 <= apb4.pwdata[GPIO_NUM-1:0];
+        `GPIO_IOFCFG:   r_iofcfg <= apb4.pwdata[GPIO_NUM-1:0];
       endcase
     end
   end
@@ -138,14 +185,15 @@ module apb4_gpio #(
     apb4.prdata = '0;
     if (s_apb4_rd_hdshk) begin
       unique case (s_apb4_addr)
-        `GPIO_PADDIR:    apb4.prdata = r_gpio_dir;
-        `GPIO_PADIN:     apb4.prdata = r_gpio_in;
-        `GPIO_PADOUT:    apb4.prdata = r_gpio_out;
-        `GPIO_INTEN:     apb4.prdata = r_gpio_inten;
-        `GPIO_INTTYPE0:  apb4.prdata = r_gpio_inttype0;
-        `GPIO_INTTYPE1:  apb4.prdata = r_gpio_inttype1;
-        `GPIO_INTSTATUS: apb4.prdata = r_status;
-        `GPIO_IOFCFG:    apb4.prdata = r_iofcfg;
+        `GPIO_PADDIR:    apb4.prdata[GPIO_NUM-1:0] = r_gpio_dir;
+        `GPIO_PADIN:     apb4.prdata[GPIO_NUM-1:0] = r_gpio_in;
+        `GPIO_PADOUT:    apb4.prdata[GPIO_NUM-1:0] = r_gpio_out;
+        `GPIO_INTEN:     apb4.prdata[GPIO_NUM-1:0] = r_gpio_inten;
+        `GPIO_INTTYPE0:  apb4.prdata[GPIO_NUM-1:0] = r_gpio_inttype0;
+        `GPIO_INTTYPE1:  apb4.prdata[GPIO_NUM-1:0] = r_gpio_inttype1;
+        `GPIO_INTSTATUS: apb4.prdata[GPIO_NUM-1:0] = r_status;
+        `GPIO_IOFCFG:    apb4.prdata[GPIO_NUM-1:0] = r_iofcfg;
+        default:         apb4.prdata[GPIO_NUM-1:0] = '0;
       endcase
     end
   end
