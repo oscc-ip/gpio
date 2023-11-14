@@ -15,10 +15,13 @@ SIM_OPTIONS  := -full64 -debug_acc+all  +v2k -sverilog -timescale=1ns/10ps \
 
 SRC_FILE ?=
 SRC_FILE += ../../common/rtl/register.sv
+SRC_FILE += ../../common/rtl/tech/gpio_pad.sv
 SRC_FILE += ../../common/rtl/interface/apb4_if.sv
 SRC_FILE += ../../common/rtl/model/apb4_master_model.sv
-SRC_FILE += ../rtl/apb4_archinfo.sv 
-SRC_FILE += ../tb/apb4_archinfo_tb.sv
+SRC_FILE += ../rtl/apb4_gpio.sv
+SRC_FILE += ../model/gpio_led_model.sv
+SRC_FILE += ../model/gpio_key_model.sv
+SRC_FILE += ../tb/apb4_gpio_tb.sv
 
 comp:
 	@mkdir -p build
