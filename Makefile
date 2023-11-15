@@ -19,13 +19,16 @@ SRC_FILE += ../../common/rtl/tech/gpio_pad.sv
 SRC_FILE += ../../common/rtl/interface/apb4_if.sv
 SRC_FILE += ../../common/rtl/model/apb4_master_model.sv
 SRC_FILE += ../rtl/apb4_gpio.sv
-SRC_FILE += ../model/gpio_led_model.sv
-SRC_FILE += ../model/gpio_key_model.sv
+# SRC_FILE += ../model/gpio_led_model.sv
+# SRC_FILE += ../model/gpio_key_model.sv
 SRC_FILE += ../tb/apb4_gpio_tb.sv
+
+SIM_INC ?=
+SIM_INC += +incdir+../../common/rtl/verif
 
 comp:
 	@mkdir -p build
-	cd build && (${SIM_TOOL} ${SIM_OPTIONS} -top apb_archinfo_tb -l compile.log $(SRC_FILE))
+	cd build && (${SIM_TOOL} ${SIM_OPTIONS} -top apb_archinfo_tb -l compile.log $(SRC_FILE) $(SIM_INC))
 
 all:simv
 

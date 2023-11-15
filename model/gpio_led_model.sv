@@ -14,9 +14,12 @@ module gpio_led_model #(
     input logic [GPIO_NUM-1:0] led_i
 );
 
+  task automatic triggered(input bit i);
+    $display("[GPIO] led %d triggered", i);
+  endtask
   for (genvar i = 0; i < GPIO_NUM; i++) begin
     if (led_i[i]) begin
-      $display("[GPIO] led %d triggered");
+      triggered(i);
     end
   end
 endmodule

@@ -109,10 +109,6 @@ module apb4_gpio #(
   logic [GPIO_NUM-1:0] s_is_int_all;
   logic                s_rise_int;
 
-  if (GPIO_NUM < 1 || GPIO_NUM > 32) begin
-    $error("GPIO_NUM must be strictly larger than 0 and less than 33");
-  end
-
   assign s_apb4_addr = apb4.paddr[5:2];
   assign s_apb4_wr_hdshk = apb4.psel && apb4.penable && apb4.pwrite;
   assign s_apb4_rd_hdshk = apb4.psel && apb4.penable && (~apb4.pwrite);
