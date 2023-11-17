@@ -15,7 +15,7 @@ class TestGPIO extends TestBase;
   string name;
 
   extern function new(string name = "test_gpio");
-  extern task test_reset_register();
+  extern task test_reset_reg();
   extern task test_irq();
 endclass
 
@@ -24,8 +24,8 @@ function TestGPIO::new(string name);
   this.name = name;
 endfunction
 
-task TestGPIO::test_reset_register();
-  super.test_reset_register();
+task TestGPIO::test_reset_reg();
+  super.test_reset_reg();
   
 endtask
 

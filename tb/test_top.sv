@@ -38,8 +38,11 @@ program automatic test_top #(
     Helper::print("tb init done");
     gpio_hdl = new("gpio_test", GPIO_NUM, apb4, gpio);
     gpio_hdl.init();
-    gpio_hdl.test_reset_register();
-    gpio_hdl.test_wr_rd_register();
+    gpio_hdl.test_reset_reg();
+    gpio_hdl.test_wr_rd_reg();
+    gpio_hdl.test_gpio_io();
+    gpio_hdl.test_gpio_cfg();
+    gpio_hdl.test_irq();
     Helper::end_banner();
     #20000 $finish;
   end
