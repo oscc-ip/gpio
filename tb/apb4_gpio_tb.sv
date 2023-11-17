@@ -1,40 +1,36 @@
-`timescale 1ns / 1ps
+// Copyright (c) 2023 Beijing Institute of Open Source Chip
+// gpio is licensed under Mulan PSL v2.
+// You can use this software according to the terms and conditions of the Mulan PSL v2.
+// You may obtain a copy of Mulan PSL v2 at:
+//             http://license.coscl.org.cn/MulanPSL2
+// THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
+// EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
+// MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
+// See the Mulan PSL v2 for more details.
 
-`include "helper.sv"
+`include "apb4_if.sv"
+`include "gpio_define.sv"
 
-module apb_archinfo_tb ();
-  localparam LED_GPIO_NUM = 8;
+module apb4_gpio_tb ();
+  localparam CLK_PEROID = 10;
+  localparam GPIO_NUM = 8;
   logic rst_n_i, clk_i;
 
-  task sim_config();
-    $timeformat(-9, 1, "ns", 10);
-    $fsdbDumpfile("./asic_top.fsdb");
-    $fsdbDumpvars(0, apb_archinfo_tb);
-  endtask
+  initial begin
+    clk_i = 1'b0;
+    forever begin
+      #(CLK_PEROID / 2) clk_i <= ~clk_i;
+    end
+  end
 
-  task reset();
-    clk_i   = 1'b0;
+  task sim_reset(int delay);
     rst_n_i = 1'b0;
-    repeat (40) @(posedge clk_i);
+    repeat (delay) @(posedge clk_i);
     #1 rst_n_i = 1'b1;
   endtask
 
-  always #5.000 clk_i <= ~clk_i;  // 100MHz
-
   initial begin
-    Helper::start_banner();
-    sim_config();
-    reset();
-    Helper::print("tb init done");
-    Helper::check("cfg_basic", 23, 22, Helper::EQUL);
-    // read test
-    // u_apb4_master_model.cmp_data(8'd0, 32'hFFFF_0000, 32'h101F_1010);
-    // #12;
-    // u_apb4_master_model.cmp_data(8'd0, 32'hFFFF_0004, 32'hFFFF_2022);
-    // #12;
-    // u_apb4_master_model.cmp_data(8'd0, 32'hFFFF_0008, 32'hFFFF_FFFF);
-    Helper::end_banner();
-    #11000 $finish;
+    sim_reset(40);
   end
 
   apb4_if u_apb4_if (
@@ -42,26 +38,15 @@ module apb_archinfo_tb ();
       rst_n_i
   );
 
-  logic [LED_GPIO_NUM-1:0] s_gpio_in, s_gpio_out, s_gpio_dir, s_gpio_iof;
-  wire [LED_GPIO_NUM-1:0] s_gpio_pad;
-  apb4_master_model u_apb4_master_model (u_apb4_if);
-  apb4_gpio #(LED_GPIO_NUM) u_apb4_gpio (
-      .apb4      (u_apb4_if),
-      .gpio_in_i (s_gpio_in),
-      .gpio_out_o(s_gpio_out),
-      .gpio_dir_o(s_gpio_dir),
-      .gpio_iof_o(s_gpio_iof)
+  gpio_if #(GPIO_NUM) u_gpio_if ();
+
+  test_top #(GPIO_NUM) u_test_top (
+      .apb4(u_apb4_if),
+      .gpio(u_gpio_if.tb)
   );
-
-  for (genvar i = 0; i < LED_GPIO_NUM; i++) begin
-    // gpio_led_model u_gpio_led_model(s_gpio_pad[i]);
-
-    tri_pd_pad_h u_tri_pd_pad_h (
-        .i_i   (s_gpio_out[i]),
-        .oen_i (s_gpio_dir[i]),
-        .c_o   (s_gpio_in[i]),
-        .pad_io(s_gpio_pad[i])
-    );
-  end
+  apb4_gpio #(GPIO_NUM) u_apb4_gpio (
+      .apb4(u_apb4_if),
+      .gpio(u_gpio_if.dut)
+  );
 
 endmodule
