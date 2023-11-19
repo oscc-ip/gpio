@@ -38,7 +38,7 @@ module apb4_gpio_tb ();
       rst_n_i
   );
 
-  gpio_if #(GPIO_NUM) u_gpio_if ();
+  gpio_if u_gpio_if ();
 
   test_top #(GPIO_NUM) u_test_top (
       .apb4(u_apb4_if),

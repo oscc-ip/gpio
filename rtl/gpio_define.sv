@@ -74,8 +74,10 @@
 `define GPIO_IOFCFG_ADDR    {26'b0, `GPIO_IOFCFG   , 2'b00}
 // verilog_format: on
 
+// NOTE: set `GPIO_NUM to actual value to
+// avoid the parameterized interface warnings
 interface gpio_if #(
-    parameter int GPIO_NUM = 32
+    parameter int GPIO_NUM = 8
 ) ();
 
   logic [GPIO_NUM-1:0] gpio_in_i;
