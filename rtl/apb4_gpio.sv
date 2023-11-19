@@ -41,7 +41,6 @@ module apb4_gpio #(
   logic [GPIO_NUM-1:0] s_gpio_in;
   logic [GPIO_NUM-1:0] s_gpio_iofcfg_d, s_gpio_iofcfg_q;
   logic [GPIO_NUM-1:0] s_gpio_intstatus_d, s_gpio_intstatus_q;
-  logic [GPIO_NUM-1:0] r_gpio_sync0, r_gpio_sync1;
   logic [GPIO_NUM-1:0] s_gpio_rise, s_gpio_fall;
   logic [GPIO_NUM-1:0] s_is_int_rise, s_is_int_fall;
   logic [GPIO_NUM-1:0] s_is_int_lev0, s_is_int_lev1, s_is_int_all;
