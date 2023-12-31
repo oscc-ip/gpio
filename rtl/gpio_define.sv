@@ -74,17 +74,14 @@
 `define GPIO_IOFCFG_ADDR    {26'b0, `GPIO_IOFCFG   , 2'b00}
 // verilog_format: on
 
-// NOTE: set `GPIO_NUM to actual value to
-// avoid the parameterized interface warnings
-interface gpio_if #(
-    parameter int GPIO_NUM = 8
-) ();
+`define GPIO_PIN_NUM 8
 
-  logic [GPIO_NUM-1:0] gpio_in_i;
-  logic [GPIO_NUM-1:0] gpio_out_o;
-  logic [GPIO_NUM-1:0] gpio_dir_o;
-  logic [GPIO_NUM-1:0] gpio_iof_o;
-  logic                irq_o;
+interface gpio_if ();
+  logic [`GPIO_PIN_NUM-1:0] gpio_in_i;
+  logic [`GPIO_PIN_NUM-1:0] gpio_out_o;
+  logic [`GPIO_PIN_NUM-1:0] gpio_dir_o;
+  logic [`GPIO_PIN_NUM-1:0] gpio_iof_o;
+  logic                     irq_o;
 
   // verilog_format: off
   modport dut(input gpio_in_i, output gpio_out_o, output gpio_dir_o, output gpio_iof_o, output irq_o);
