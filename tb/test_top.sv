@@ -12,9 +12,7 @@
 `include "helper.sv"
 `include "gpio_define.sv"
 
-program automatic test_top #(
-    parameter int GPIO_NUM = 32
-) (
+program automatic test_top (
     apb4_if.master apb4,
     gpio_if.tb     gpio
 );
@@ -36,7 +34,7 @@ program automatic test_top #(
     sim_config();
     @(posedge apb4.presetn);
     Helper::print("tb init done");
-    gpio_hdl = new("gpio_test", GPIO_NUM, apb4, gpio);
+    gpio_hdl = new("gpio_test", `GPIO_PIN_NUM, apb4, gpio);
     gpio_hdl.init();
     gpio_hdl.test_reset_reg();
     gpio_hdl.test_wr_rd_reg();

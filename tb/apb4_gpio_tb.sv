@@ -13,7 +13,6 @@
 
 module apb4_gpio_tb ();
   localparam CLK_PEROID = 10;
-  localparam GPIO_NUM = 8;
   logic rst_n_i, clk_i;
 
   initial begin
@@ -40,12 +39,12 @@ module apb4_gpio_tb ();
 
   gpio_if u_gpio_if ();
 
-  test_top #(GPIO_NUM) u_test_top (
-      .apb4(u_apb4_if),
+  test_top u_test_top (
+      .apb4(u_apb4_if.master),
       .gpio(u_gpio_if.tb)
   );
-  apb4_gpio #(GPIO_NUM) u_apb4_gpio (
-      .apb4(u_apb4_if),
+  apb4_gpio u_apb4_gpio (
+      .apb4(u_apb4_if.slave),
       .gpio(u_gpio_if.dut)
   );
 
