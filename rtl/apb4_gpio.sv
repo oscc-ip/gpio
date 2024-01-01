@@ -71,7 +71,10 @@ module apb4_gpio (
   assign s_is_int_all  = s_gpio_inten_q & (s_is_int_rise | s_is_int_fall | s_is_int_lev0 | s_is_int_lev1);
   assign s_rise_int = |s_is_int_all;
 
-  edge_det #(2, `GPIO_PIN_NUM) u_edge_det (
+  edge_det #(
+      .STAGE     (2),
+      .DATA_WIDTH(`GPIO_PIN_NUM)
+  ) u_edge_det (
       apb4.pclk,
       apb4.presetn,
       gpio.gpio_in_i,
