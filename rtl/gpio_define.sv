@@ -20,7 +20,7 @@
  * GPIO_PADIN:
  * BITS:   | 31:GPIO_NUM | GPIO_NUM-1:0 |
  * FIELDS: | RES         | IN           |
- * PERMS:  | NONE        | R            |
+ * PERMS:  | NONE        | RO           |
  * --------------------------------------
  * GPIO_PADOUT:
  * BITS:   | 31:GPIO_NUM | GPIO_NUM-1:0 |
@@ -42,10 +42,10 @@
  * FIELDS: | RES         | INTTYPE1     |
  * PERMS:  | NONE        | RW           |
  * --------------------------------------
- * GPIO_INTSTATUS:
+ * GPIO_INTSTAT:
  * BITS:   | 31:GPIO_NUM | GPIO_NUM-1:0 |
- * FIELDS: | RES         | INTSTATUS    |
- * PERMS:  | NONE        | R            |
+ * FIELDS: | RES         | INTSTAT      |
+ * PERMS:  | NONE        | RO           |
  * --------------------------------------
  * GPIO_IOFCFG:
  * BITS:   | 31:GPIO_NUM | GPIO_NUM-1:0 |
@@ -55,23 +55,23 @@
 */
 
 // verilog_format: off
-`define GPIO_PADDIR    4'b0000 // BASEADDR + 0x00
-`define GPIO_PADIN     4'b0001 // BASEADDR + 0x04
-`define GPIO_PADOUT    4'b0010 // BASEADDR + 0x08
-`define GPIO_INTEN     4'b0011 // BASEADDR + 0x0C
-`define GPIO_INTTYPE0  4'b0100 // BASEADDR + 0x10
-`define GPIO_INTTYPE1  4'b0101 // BASEADDR + 0x14
-`define GPIO_INTSTATUS 4'b0110 // BASEADDR + 0x18
-`define GPIO_IOFCFG    4'b0111 // BASEADDR + 0x1C
+`define GPIO_PADDIR   4'b0000 // BASEADDR + 0x00
+`define GPIO_PADIN    4'b0001 // BASEADDR + 0x04
+`define GPIO_PADOUT   4'b0010 // BASEADDR + 0x08
+`define GPIO_INTEN    4'b0011 // BASEADDR + 0x0C
+`define GPIO_INTTYPE0 4'b0100 // BASEADDR + 0x10
+`define GPIO_INTTYPE1 4'b0101 // BASEADDR + 0x14
+`define GPIO_INTSTAT  4'b0110 // BASEADDR + 0x18
+`define GPIO_IOFCFG   4'b0111 // BASEADDR + 0x1C
 
-`define GPIO_PADDIR_ADDR    {26'b0, `GPIO_PADDIR   , 2'b00}
-`define GPIO_PADIN_ADDR     {26'b0, `GPIO_PADIN    , 2'b00}
-`define GPIO_PADOUT_ADDR    {26'b0, `GPIO_PADOUT   , 2'b00}
-`define GPIO_INTEN_ADDR     {26'b0, `GPIO_INTEN    , 2'b00}
-`define GPIO_INTTYPE0_ADDR  {26'b0, `GPIO_INTTYPE0 , 2'b00}
-`define GPIO_INTTYPE1_ADDR  {26'b0, `GPIO_INTTYPE1 , 2'b00}
-`define GPIO_INTSTATUS_ADDR {26'b0, `GPIO_INTSTATUS, 2'b00}
-`define GPIO_IOFCFG_ADDR    {26'b0, `GPIO_IOFCFG   , 2'b00}
+`define GPIO_PADDIR_ADDR   {26'b0, `GPIO_PADDIR  , 2'b00}
+`define GPIO_PADIN_ADDR    {26'b0, `GPIO_PADIN   , 2'b00}
+`define GPIO_PADOUT_ADDR   {26'b0, `GPIO_PADOUT  , 2'b00}
+`define GPIO_INTEN_ADDR    {26'b0, `GPIO_INTEN   , 2'b00}
+`define GPIO_INTTYPE0_ADDR {26'b0, `GPIO_INTTYPE0, 2'b00}
+`define GPIO_INTTYPE1_ADDR {26'b0, `GPIO_INTTYPE1, 2'b00}
+`define GPIO_INTSTAT_ADDR  {26'b0, `GPIO_INTSTAT , 2'b00}
+`define GPIO_IOFCFG_ADDR   {26'b0, `GPIO_IOFCFG  , 2'b00}
 // verilog_format: on
 
 `define GPIO_PIN_NUM 8

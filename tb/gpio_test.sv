@@ -63,7 +63,7 @@ task automatic GPIOTest::test_reset_reg();
   this.rd_check(`GPIO_INTEN_ADDR, "INTEN REG", 32'b0 & this.gpio_mask, Helper::EQUL, Helper::INFO);
   this.rd_check(`GPIO_INTTYPE0_ADDR, "INTTYPE0 REG", 32'b0 & this.gpio_mask, Helper::EQUL, Helper::INFO);
   this.rd_check(`GPIO_INTTYPE1_ADDR, "INTTYPE1 REG", 32'b0 & this.gpio_mask, Helper::EQUL, Helper::INFO);
-  this.rd_check(`GPIO_INTSTATUS_ADDR, "INTSTATUS REG", 32'b0 & this.gpio_mask, Helper::EQUL, Helper::INFO);
+  this.rd_check(`GPIO_INTSTAT_ADDR, "INTSTAT REG", 32'b0 & this.gpio_mask, Helper::EQUL, Helper::INFO);
   this.rd_check(`GPIO_IOFCFG_ADDR, "IOFCFG REG", 32'b0 & this.gpio_mask, Helper::EQUL, Helper::INFO);
   // verilog_format: on
 endtask
@@ -129,7 +129,7 @@ task automatic GPIOTest::test_irq(input bit [31:0] run_times = 1000);
     repeat (6) @(posedge this.apb4.pclk);
     #1;
     this.write(`GPIO_INTEN_ADDR, '0);
-    this.rd_check(`GPIO_INTSTATUS_ADDR, "INTSTATUS REG", this.in_val, Helper::EQUL);
+    this.rd_check(`GPIO_INTSTAT_ADDR, "INTSTAT REG", this.in_val, Helper::EQUL);
   end
 
   // all irq low triggered test
@@ -147,7 +147,7 @@ task automatic GPIOTest::test_irq(input bit [31:0] run_times = 1000);
     repeat (6) @(posedge this.apb4.pclk);
     #1;
     this.write(`GPIO_INTEN_ADDR, '0);
-    this.rd_check(`GPIO_INTSTATUS_ADDR, "INTSTATUS REG", this.in_val, Helper::EQUL);
+    this.rd_check(`GPIO_INTSTAT_ADDR, "INTSTAT REG", this.in_val, Helper::EQUL);
   end
 
   // all irq rise triggered test
@@ -165,7 +165,7 @@ task automatic GPIOTest::test_irq(input bit [31:0] run_times = 1000);
     repeat (6) @(posedge this.apb4.pclk);
     #1;
     this.write(`GPIO_INTEN_ADDR, '0);
-    this.rd_check(`GPIO_INTSTATUS_ADDR, "INTSTATUS REG", this.in_val, Helper::EQUL);
+    this.rd_check(`GPIO_INTSTAT_ADDR, "INTSTAT REG", this.in_val, Helper::EQUL);
   end
 
   // all irq fall triggered test
@@ -183,7 +183,7 @@ task automatic GPIOTest::test_irq(input bit [31:0] run_times = 1000);
     repeat (6) @(posedge this.apb4.pclk);
     #1;
     this.write(`GPIO_INTEN_ADDR, '0);
-    this.rd_check(`GPIO_INTSTATUS_ADDR, "INTSTATUS REG", this.in_val, Helper::EQUL);
+    this.rd_check(`GPIO_INTSTAT_ADDR, "INTSTAT REG", this.in_val, Helper::EQUL);
   end
 endtask
 
