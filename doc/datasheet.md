@@ -52,14 +52,14 @@ The `gpio(general purpose input/output)` IP is a fully parameterised soft IP rec
 reset value: `0x0000_0000`
 
 * DIR: pad direction
-    * `DIR[i] = 1'b0`: gpio[i] output
-    * `DIR[i] = 1'b1`: gpio[i] input
+    * `DIR[i] = 1'b0`: Ith gpio output
+    * `DIR[i] = 1'b1`: Ith gpio input
 
 #### PAD Data In Register
 | bit | access  | description |
 |:---:|:-------:| :---------: |
 | `[31:GPIO_NUM]` | none | reserved |
-| `[GPIO_NUM-1:0]` | RW | IN |
+| `[GPIO_NUM-1:0]` | RO | IN |
 
 reset value: `0x0000_0000`
 
@@ -84,7 +84,7 @@ reset value: `0x0000_0000`
 reset value: `0x0000_0000`
 
 * INTEN: interrupt enable
-    * `INTEN[i] = 1'b0`: disable `gpio[i]` input interrupt
+    * `INTEN[i] = 1'b0`: disable Ith gpio input interrupt
     * `INTEN[i] = 1'b1`: otherwise
 
 #### Interrupt Type0 Register
