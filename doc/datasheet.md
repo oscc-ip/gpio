@@ -132,8 +132,8 @@ input operation:
 ```c
 gpio.PADDIR[i]   = (uint32_t)1 // set Ith gpio ouput mode
 gpio.INTEN[i]    = (uint32_t)1 // enable Ith gpio irq
-gpio.INTTYPE0[i] = (uint32_t)0
-gpio.INTTYPE1[i] = (uint32_t)1 // set Ith gpio type
+gpio.INTTYPE0[i] = (uint32_t)0 // set Ith gpio rise edge trigger
+gpio.INTTYPE1[i] = (uint32_t)1 // set Ith gpio rise edge trigger
 
 // polling mode
 while(gpio.PADDIN[i] == 1) {} 
