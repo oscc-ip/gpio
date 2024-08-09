@@ -144,6 +144,7 @@ gpio_handle(){
     irq_val = gpio.STAT // read and clear irq flag
 }
 ```
+complete driver and test codes in [driver](../driver/) dir.
 
 ### Resoureces
 ### References
