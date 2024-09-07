@@ -52,6 +52,11 @@
  * FIELDS: | RES         | IOCFG        |
  * PERMS:  | NONE        | RW           |
  * --------------------------------------
+ * GPIO_PINMUX:
+ * BITS:   | 31:GPIO_NUM | GPIO_NUM-1:0 |
+ * FIELDS: | RES         | PINMUX       |
+ * PERMS:  | NONE        | RW           |
+ * --------------------------------------
 */
 
 // verilog_format: off
@@ -63,6 +68,7 @@
 `define GPIO_INTTYPE1 4'b0101 // BASEADDR + 0x14
 `define GPIO_INTSTAT  4'b0110 // BASEADDR + 0x18
 `define GPIO_IOFCFG   4'b0111 // BASEADDR + 0x1C
+`define GPIO_PINMUX   4'b1000 // BASEADDR + 0x20
 
 `define GPIO_PADDIR_ADDR   {26'b0, `GPIO_PADDIR  , 2'b00}
 `define GPIO_PADIN_ADDR    {26'b0, `GPIO_PADIN   , 2'b00}
@@ -72,6 +78,7 @@
 `define GPIO_INTTYPE1_ADDR {26'b0, `GPIO_INTTYPE1, 2'b00}
 `define GPIO_INTSTAT_ADDR  {26'b0, `GPIO_INTSTAT , 2'b00}
 `define GPIO_IOFCFG_ADDR   {26'b0, `GPIO_IOFCFG  , 2'b00}
+`define GPIO_PINMUX_ADDR   {26'b0, `GPIO_PINMUX  , 2'b00}
 // verilog_format: on
 
 `define GPIO_PIN_NUM 8
@@ -80,12 +87,35 @@ interface gpio_if ();
   logic [`GPIO_PIN_NUM-1:0] gpio_in_i;
   logic [`GPIO_PIN_NUM-1:0] gpio_out_o;
   logic [`GPIO_PIN_NUM-1:0] gpio_dir_o;
-  logic [`GPIO_PIN_NUM-1:0] gpio_iof_o;
+  logic [`GPIO_PIN_NUM-1:0] gpio_alt_in_o;
+  logic [`GPIO_PIN_NUM-1:0] gpio_alt_0_out_i;
+  logic [`GPIO_PIN_NUM-1:0] gpio_alt_0_dir_i;
+  logic [`GPIO_PIN_NUM-1:0] gpio_alt_1_out_i;
+  logic [`GPIO_PIN_NUM-1:0] gpio_alt_1_dir_i;
   logic                     irq_o;
 
-  // verilog_format: off
-  modport dut(input gpio_in_i, output gpio_out_o, output gpio_dir_o, output gpio_iof_o, output irq_o);
-  modport tb(output gpio_in_i, input gpio_out_o, input gpio_dir_o, input gpio_iof_o, input irq_o);
-  // verilog_format: on
+  modport dut(
+      input gpio_in_i,
+      output gpio_out_o,
+      output gpio_dir_o,
+      output gpio_alt_in_o,
+      input gpio_alt_0_out_i,
+      input gpio_alt_0_dir_i,
+      input gpio_alt_1_out_i,
+      input gpio_alt_1_dir_i,
+      output irq_o
+  );
+  modport tb(
+      output gpio_in_i,
+      input gpio_out_o,
+      input gpio_dir_o,
+      input gpio_alt_in_o,
+      output gpio_alt_0_out_i,
+      output gpio_alt_0_dir_i,
+      output gpio_alt_1_out_i,
+      output gpio_alt_1_dir_i,
+      input irq_o
+  );
+
 endinterface
 `endif

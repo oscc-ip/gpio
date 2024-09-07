@@ -47,29 +47,30 @@ module apb4_gpio (
   logic s_gpio_intstat_en;
   logic [`GPIO_PIN_NUM-1:0] s_gpio_iofcfg_d, s_gpio_iofcfg_q;
   logic s_gpio_iofcfg_en;
-
-  logic [`GPIO_PIN_NUM-1:0] s_gpio_rise, s_gpio_fall;
+  logic [`GPIO_PIN_NUM-1:0] s_gpio_pinmux_d, s_gpio_pinmux_q;
+  logic s_gpio_pinmux_en;
+  // irq
+  logic [`GPIO_PIN_NUM-1:0] s_gpio_rise, s_gpio_fall, s_gpio_irq_trg;
   logic [`GPIO_PIN_NUM-1:0] s_is_int_rise, s_is_int_fall;
   logic [`GPIO_PIN_NUM-1:0] s_is_int_lev0, s_is_int_lev1, s_is_int_all;
   logic s_rise_int, s_irq;
+  // alt
+  logic [`GPIO_PIN_NUM-1:0] s_gpio_alt_out, s_gpio_alt_dir;
 
-  assign s_apb4_addr = apb4.paddr[5:2];
+  assign s_apb4_addr     = apb4.paddr[5:2];
   assign s_apb4_wr_hdshk = apb4.psel && apb4.penable && apb4.pwrite;
   assign s_apb4_rd_hdshk = apb4.psel && apb4.penable && (~apb4.pwrite);
-  assign apb4.pready = 1'b1;
-  assign apb4.pslverr = 1'b0;
+  assign apb4.pready     = 1'b1;
+  assign apb4.pslverr    = 1'b0;
+  assign gpio.irq_o      = s_irq;
 
-  assign gpio.gpio_dir_o = s_gpio_dir_q;
-  assign gpio.gpio_out_o = s_gpio_out_q;
-  assign gpio.gpio_iof_o = s_gpio_iofcfg_q;
-  assign gpio.irq_o = s_irq;
-
-  assign s_is_int_rise = (s_gpio_inttype1_q & ~s_gpio_inttype0_q) & s_gpio_rise;
-  assign s_is_int_fall = (s_gpio_inttype1_q & s_gpio_inttype0_q) & s_gpio_fall;
-  assign s_is_int_lev0 = (~s_gpio_inttype1_q & s_gpio_inttype0_q) & ~s_gpio_in;
-  assign s_is_int_lev1 = (~s_gpio_inttype1_q & ~s_gpio_inttype0_q) & s_gpio_in;
-  assign s_is_int_all  = s_gpio_inten_q & (s_is_int_rise | s_is_int_fall | s_is_int_lev0 | s_is_int_lev1);
-  assign s_rise_int = |s_is_int_all;
+  assign s_is_int_rise   = (s_gpio_inttype1_q & ~s_gpio_inttype0_q) & s_gpio_rise;
+  assign s_is_int_fall   = (s_gpio_inttype1_q & s_gpio_inttype0_q) & s_gpio_fall;
+  assign s_is_int_lev0   = (~s_gpio_inttype1_q & s_gpio_inttype0_q) & ~s_gpio_in;
+  assign s_is_int_lev1   = (~s_gpio_inttype1_q & ~s_gpio_inttype0_q) & s_gpio_in;
+  assign s_gpio_irq_trg  = s_is_int_rise | s_is_int_fall | s_is_int_lev0 | s_is_int_lev1;
+  assign s_is_int_all    = s_gpio_inten_q & s_gpio_irq_trg;
+  assign s_rise_int      = |s_is_int_all;
 
   edge_det #(
       .STAGE     (2),
@@ -143,6 +144,16 @@ module apb4_gpio (
       s_gpio_iofcfg_q
   );
 
+  assign s_gpio_pinmux_en = s_apb4_wr_hdshk && s_apb4_addr == `GPIO_PINMUX;
+  assign s_gpio_pinmux_d  = apb4.pwdata[`GPIO_PIN_NUM-1:0];
+  dffer #(`GPIO_PIN_NUM) u_gpio_pinmux_dffer (
+      apb4.pclk,
+      apb4.presetn,
+      s_gpio_pinmux_en,
+      s_gpio_pinmux_d,
+      s_gpio_pinmux_q
+  );
+
   assign s_irq = |s_gpio_intstat_q;
   assign s_gpio_intstat_en = (s_irq && s_apb4_rd_hdshk && s_apb4_addr == `GPIO_INTSTAT) || (~s_irq && s_rise_int);
   always_comb begin
@@ -173,8 +184,22 @@ module apb4_gpio (
         `GPIO_INTTYPE1: apb4.prdata[`GPIO_PIN_NUM-1:0] = s_gpio_inttype1_q;
         `GPIO_INTSTAT:  apb4.prdata[`GPIO_PIN_NUM-1:0] = s_gpio_intstat_q;
         `GPIO_IOFCFG:   apb4.prdata[`GPIO_PIN_NUM-1:0] = s_gpio_iofcfg_q;
+        `GPIO_PINMUX:   apb4.prdata[`GPIO_PIN_NUM-1:0] = s_gpio_pinmux_q;
         default:        apb4.prdata[`GPIO_PIN_NUM-1:0] = '0;
       endcase
     end
   end
+
+  // pinmux func
+  assign gpio.gpio_alt_in_o = s_gpio_in;
+  for (genvar i = 0; i < `GPIO_PIN_NUM; i++) begin : ALT_PINMUX_BLOCK
+    assign s_gpio_alt_dir[i] = s_gpio_pinmux_q[i] ? gpio.gpio_alt_1_dir_i : gpio.gpio_alt_0_dir_i;
+    assign s_gpio_alt_out[i] = s_gpio_pinmux_q[i] ? gpio.gpio_alt_1_out_i : gpio.gpio_alt_0_out_i;
+  end
+
+  for (genvar i = 0; i < `GPIO_PIN_NUM; i++) begin : IOF_PINMUX_BLOCK
+    assign gpio.gpio_dir_o[i] = s_gpio_iofcfg_q[i] ? s_gpio_alt_dir[i] : s_gpio_dir_q[i];
+    assign gpio.gpio_out_o[i] = s_gpio_iofcfg_q[i] ? s_gpio_alt_out[i] : s_gpio_out_q[i];
+  end
+
 endmodule
