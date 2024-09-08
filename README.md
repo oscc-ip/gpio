@@ -3,7 +3,7 @@
 ## Features
 * 1~32 channels support
 * Input and output direction control
-* Pin multiplexer with one alternate ouput function
+* Pin multiplexer with two alternate ouput function
 * Three configurable modes
     * input pull-down with schmitt trigger
     * ouput push-pull

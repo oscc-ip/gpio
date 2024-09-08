@@ -6,7 +6,7 @@ The `gpio(general purpose input/output)` IP is a fully parameterised soft IP rec
 ### Feature
 * 1~32 channels support
 * Input and output direction control
-* Pin multiplexer with one alternate ouput function
+* Pin multiplexer with two alternate ouput function
 * Three configurable modes
     * input pull-down with schmitt trigger
     * ouput push-pull
@@ -41,7 +41,8 @@ The `gpio(general purpose input/output)` IP is a fully parameterised soft IP rec
 | [INTTYPE0](#interrupt-type0-register) | 0x10 | 4 | interrupt type0 register |
 | [INTTYPE1](#interrupt-type1-register) | 0x14 | 4 | interrupt type1 register |
 | [INTSTAT](#interrupt-state-register) | 0x18 | 4 | interrupt state register |
-| [IOCFG]() | 0x1C | 4 | io configuration register |
+| [IOCFG](#) | 0x1C | 4 | io configuration register |
+| [PINMUX](#pin-mux-register) | 0x1C | 4 | io configuration register |
 
 #### PAD Direction Register
 | bit | access  | description |
@@ -122,18 +123,49 @@ reset value: `0x0000_0000`
 
 * INTSTAT: interrupt state
 
+#### IO Config Register
+| bit | access  | description |
+|:---:|:-------:| :---------: |
+| `[31:GPIO_NUM]` | none | reserved |
+| `[GPIO_NUM-1:0]` | RW | IOCFG |
+
+reset value: `0x0000_0000`
+
+* IOCFG: io control mode config
+    * `IOCFG[i] = 1'b0`: software control mode
+    * `IOCFG[i] = 1'b1`: alternate control mode
+
+#### Pin Mux Register
+| bit | access  | description |
+|:---:|:-------:| :---------: |
+| `[31:GPIO_NUM]` | none | reserved |
+| `[GPIO_NUM-1:0]` | RW | PINMUX |
+
+reset value: `0x0000_0000`
+
+* PINMUX: alternate io select
+    * `IOCFG[i] = 1'b0`: alternate 0 io select
+    * `IOCFG[i] = 1'b1`: alternate 1 io select
+
 ### Program Guide
 These registers can be accessed by 4-byte aligned read and write. C-like pseudocode output operation:
 ```c
-gpio.PADDIR[i] = (uint32_t)0 // set Ith gpio ouput mode
-gpio.PADOUT[i] = DATA_1_bit  // set Ith gpio output data
+// software control
+gpio.IOCFG[i]  = (uint32_t)0      // set to software control mode
+gpio.PADDIR[i] = (uint32_t)0      // set Ith gpio ouput mode
+gpio.PADOUT[i] = DATA_1_bit       // set Ith gpio output data
+// alternate io
+gpio.IOCFG[i]  = (uint32_t)1      // set to alternate io control mode
+gpio.PINMUX[i] = (uint32_t)[0, 1] // set the alter data io signals
+...                               // specific IP function config...
 ```
 input operation:
 ```c
-gpio.PADDIR[i]   = (uint32_t)1 // set Ith gpio ouput mode
-gpio.INTEN[i]    = (uint32_t)1 // enable Ith gpio irq
-gpio.INTTYPE0[i] = (uint32_t)0 // set Ith gpio rise edge trigger
-gpio.INTTYPE1[i] = (uint32_t)1 // set Ith gpio rise edge trigger
+gpio.IOCFG       = (uint32_t)0    // set to software control mode
+gpio.PADDIR[i]   = (uint32_t)1    // set Ith gpio ouput mode
+gpio.INTEN[i]    = (uint32_t)1    // enable Ith gpio irq
+gpio.INTTYPE0[i] = (uint32_t)0    // set Ith gpio rise edge trigger
+gpio.INTTYPE1[i] = (uint32_t)1    // set Ith gpio rise edge trigger
 
 // polling mode
 while(gpio.PADDIN[i] == 1) {} 
@@ -141,7 +173,7 @@ while(gpio.PADDIN[i] == 1) {}
 // irq mode
 ...
 gpio_handle(){
-    irq_val = gpio.STAT // read and clear irq flag
+    irq_val = gpio.STAT           // read and clear irq flag
 }
 ```
 complete driver and test codes in [driver](../driver/) dir.
