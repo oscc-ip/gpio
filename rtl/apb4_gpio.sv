@@ -193,8 +193,8 @@ module apb4_gpio (
   // pinmux func
   assign gpio.gpio_alt_in_o = s_gpio_in;
   for (genvar i = 0; i < `GPIO_PIN_NUM; i++) begin : ALT_PINMUX_BLOCK
-    assign s_gpio_alt_dir[i] = s_gpio_pinmux_q[i] ? gpio.gpio_alt_1_dir_i : gpio.gpio_alt_0_dir_i;
-    assign s_gpio_alt_out[i] = s_gpio_pinmux_q[i] ? gpio.gpio_alt_1_out_i : gpio.gpio_alt_0_out_i;
+    assign s_gpio_alt_dir[i] = s_gpio_pinmux_q[i] ? gpio.gpio_alt_1_dir_i[i] : gpio.gpio_alt_0_dir_i[i];
+    assign s_gpio_alt_out[i] = s_gpio_pinmux_q[i] ? gpio.gpio_alt_1_out_i[i] : gpio.gpio_alt_0_out_i[i];
   end
 
   for (genvar i = 0; i < `GPIO_PIN_NUM; i++) begin : IOF_PINMUX_BLOCK
