@@ -22,6 +22,10 @@ class GPIOTest extends APB4Master;
   int                    dir_val;
   int                    in_val;
   int                    out_val;
+  int                    altr_dir_0_val;
+  int                    altr_dir_1_val;
+  int                    altr_out_0_val;
+  int                    altr_out_1_val;
   int                    inten_val;
   int                    inttype0_val;
   int                    inttype1_val;
@@ -32,8 +36,8 @@ class GPIOTest extends APB4Master;
                       virtual gpio_if.tb gpio);
   extern task automatic test_reset_reg();
   extern task automatic test_wr_rd_reg(input bit [31:0] run_times = 1000);
-  extern task automatic test_gpio_io(input bit [31:0] run_times = 1000);
-  extern task automatic test_gpio_cfg(input bit [31:0] run_times = 1000);
+  extern task automatic test_soft_ctr_io(input bit [31:0] run_times = 1000);
+  extern task automatic test_altr_ctr_io(input bit [31:0] run_times = 1000);
   extern task automatic test_irq(input bit [31:0] run_times = 1000);
 endclass
 
@@ -84,37 +88,70 @@ task automatic GPIOTest::test_wr_rd_reg(input bit [31:0] run_times = 1000);
   // verilog_format: on
 endtask
 
-task automatic GPIOTest::test_gpio_io(input bit [31:0] run_times = 1000);
-  $display("=== [test gpio io] ===");
+task automatic GPIOTest::test_soft_ctr_io(input bit [31:0] run_times = 1000);
+  $display("%t === [test gpio soft ctr io] ===", $time);
   // reg: dir, out, in, clear int enable
   this.write(`GPIO_INTEN_ADDR, 32'b0);
+  this.write(`GPIO_IOFCFG_ADDR, 32'b0);
   for (int i = 0; i < run_times; i++) begin
-    this.dir_val = $random & this.gpio_mask;
     this.in_val  = $random & this.gpio_mask;
+    this.dir_val = $random & this.gpio_mask;
     this.out_val = $random & this.gpio_mask;
 
     this.write(`GPIO_PADDIR_ADDR, this.dir_val);
-    Helper::check("GPIO DIR", this.dir_val, this.gpio.gpio_dir_o, Helper::EQUL);
+    Helper::check("[SOFT]GPIO DIR", this.dir_val, this.gpio.gpio_dir_o, Helper::EQUL, Helper::NORM);
     this.write(`GPIO_PADOUT_ADDR, this.out_val);
-    Helper::check("GPIO WRITE OUT", this.gpio.gpio_out_o, this.out_val, Helper::EQUL);
+    Helper::check("[SOFT]GPIO WRITE OUT", this.gpio.gpio_out_o, this.out_val, Helper::EQUL,
+                  Helper::NORM);
     this.gpio.gpio_in_i = this.in_val;
     repeat (4) @(posedge apb4.pclk);
-    #1;
-    this.rd_check(`GPIO_PADIN_ADDR, "GPIO READ IN", this.in_val, Helper::EQUL);
+    #`REGISTER_DELAY;
+    this.rd_check(`GPIO_PADIN_ADDR, "[SOFT]GPIO READ IN", this.in_val, Helper::EQUL, Helper::NORM);
   end
 endtask
 
-task automatic GPIOTest::test_gpio_cfg(input bit [31:0] run_times = 1000);
-  $display("=== [test gpio cfg] ===");
+task automatic GPIOTest::test_altr_ctr_io(input bit [31:0] run_times = 1000);
+  $display("%t === [test gpio altr ctr io] ===", $time);
+  repeat (20) @(posedge apb4.pclk);
+  this.write(`GPIO_INTEN_ADDR, 32'b0);
+  this.write(`GPIO_IOFCFG_ADDR, '1);
   for (int i = 0; i < run_times; i++) begin
-    this.wr_val = $random & this.gpio_mask;
-    this.write(`GPIO_IOFCFG_ADDR, this.wr_val);
-    // Helper::check("IOFCFG REG", this.wr_val, this.gpio.gpio_iof_o, Helper::EQUL);
+    this.in_val         = $random & this.gpio_mask;
+    this.altr_dir_0_val = $random & this.gpio_mask;
+    this.altr_dir_1_val = $random & this.gpio_mask;
+    this.altr_out_0_val = $random & this.gpio_mask;
+    this.altr_out_1_val = $random & this.gpio_mask;
+
+    // verilog_format: off
+    // connect alt 0 io to the interface
+    this.write(`GPIO_PINMUX_ADDR, 32'b0);
+    this.gpio.gpio_alt_0_dir_i = this.altr_dir_0_val;
+    #`REGISTER_DELAY;
+    Helper::check("[ALT]GPIO DIR", this.gpio.gpio_alt_0_dir_i, this.gpio.gpio_dir_o, Helper::EQUL, Helper::NORM);
+    this.gpio.gpio_alt_0_out_i = this.altr_out_0_val;
+    #`REGISTER_DELAY;
+    Helper::check("[ALT]GPIO OUT", this.gpio.gpio_alt_0_out_i, this.gpio.gpio_out_o, Helper::EQUL, Helper::NORM);
+    // connect alt 1 io to the interface
+    this.write(`GPIO_PINMUX_ADDR, '1);
+    this.gpio.gpio_alt_1_dir_i = this.altr_dir_1_val;
+    #`REGISTER_DELAY;
+    Helper::check("[ALT]GPIO DIR", this.gpio.gpio_alt_1_dir_i, this.gpio.gpio_dir_o, Helper::EQUL, Helper::NORM);
+    this.gpio.gpio_alt_1_out_i = this.altr_out_1_val;
+    #`REGISTER_DELAY;
+    Helper::check("[ALT]GPIO OUT", this.gpio.gpio_alt_1_out_i, this.gpio.gpio_out_o, Helper::EQUL, Helper::NORM);
+
+    this.gpio.gpio_in_i = this.in_val;
+    repeat (4) @(posedge apb4.pclk);
+    #`REGISTER_DELAY;
+    this.rd_check(`GPIO_PADIN_ADDR, "[ALT]GPIO READ IN", this.gpio.gpio_alt_in_o, Helper::EQUL);
+    // verilog_format: on
   end
 endtask
 
 task automatic GPIOTest::test_irq(input bit [31:0] run_times = 1000);
   super.test_irq();
+  this.write(`GPIO_INTEN_ADDR, 32'b0);
+  this.write(`GPIO_IOFCFG_ADDR, 32'b0);
   // all irq high triggered test
   for (int i = 0; i < run_times; i++) begin
     this.in_val         = $random & this.gpio_mask;

@@ -38,9 +38,9 @@ program automatic test_top (
     gpio_hdl.init();
     gpio_hdl.test_reset_reg();
     gpio_hdl.test_wr_rd_reg();
-    // gpio_hdl.test_gpio_io();
-    // gpio_hdl.test_gpio_cfg();
-    // gpio_hdl.test_irq();
+    gpio_hdl.test_soft_ctr_io();
+    gpio_hdl.test_altr_ctr_io();
+    gpio_hdl.test_irq();
     Helper::end_banner();
     #20000 $finish;
   end
