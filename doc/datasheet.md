@@ -53,8 +53,8 @@ The `gpio(general purpose input/output)` IP is a fully parameterised soft IP rec
 reset value: `0x0000_0000`
 
 * DIR: pad direction
-    * `DIR[i] = 1'b0`: Ith gpio output
-    * `DIR[i] = 1'b1`: Ith gpio input
+    * `DIR[i] = 1'b0`: Ith gpio input
+    * `DIR[i] = 1'b1`: Ith gpio output
 
 #### PAD Data In Register
 | bit | access  | description |
