@@ -27,7 +27,11 @@ The `gpio(general purpose input/output)` IP is a fully parameterised soft IP rec
 | `gpio.gpio_in_i` | input | gpio data input |
 | `gpio.gpio_out_o` | output | gpio data output |
 | `gpio.gpio_dir_o` | output | gpio direction output |
-| `gpio.gpio_iof_o` | output | gpio function ouput |
+| `gpio.gpio_alt_in_o` | output | alter io data output |
+| `gpio.gpio_alt_0_out_i` | input | alter 0 channel data output |
+| `gpio.gpio_alt_0_dir_i` | input | alter 0 channel direction output |
+| `gpio.gpio_alt_1_out_i` | input | alter 1 channel data output |
+| `gpio.gpio_alt_1_dir_i` | input | alter 1 channel direction output |
 | `gpio.irq_o` | output | gpio interrupt output |
 
 ### Register
@@ -41,8 +45,8 @@ The `gpio(general purpose input/output)` IP is a fully parameterised soft IP rec
 | [INTTYPE0](#interrupt-type0-register) | 0x10 | 4 | interrupt type0 register |
 | [INTTYPE1](#interrupt-type1-register) | 0x14 | 4 | interrupt type1 register |
 | [INTSTAT](#interrupt-state-register) | 0x18 | 4 | interrupt state register |
-| [IOCFG](#) | 0x1C | 4 | io configuration register |
-| [PINMUX](#pin-mux-register) | 0x1C | 4 | io configuration register |
+| [IOCFG](#io-config-register) | 0x1C | 4 | io configuration register |
+| [PINMUX](#pin-mux-register) | 0x20 | 4 | pin mux register |
 
 #### PAD Direction Register
 | bit | access  | description |
@@ -143,9 +147,9 @@ reset value: `0x0000_0000`
 
 reset value: `0x0000_0000`
 
-* PINMUX: alternate io select
-    * `IOCFG[i] = 1'b0`: alternate 0 io select
-    * `IOCFG[i] = 1'b1`: alternate 1 io select
+* PINMUX: alternate io channel select
+    * `PINMUX[i] = 1'b0`: alternate 0 channel io select
+    * `PINMUX[i] = 1'b1`: alternate 1 channel io select
 
 ### Program Guide
 These registers can be accessed by 4-byte aligned read and write. C-like pseudocode output operation:
@@ -154,9 +158,9 @@ These registers can be accessed by 4-byte aligned read and write. C-like pseudoc
 gpio.IOCFG[i]  = (uint32_t)0      // set to software control mode
 gpio.PADDIR[i] = (uint32_t)0      // set Ith gpio ouput mode
 gpio.PADOUT[i] = DATA_1_bit       // set Ith gpio output data
-// alternate io
+// alternate control
 gpio.IOCFG[i]  = (uint32_t)1      // set to alternate io control mode
-gpio.PINMUX[i] = (uint32_t)[0, 1] // set the alter data io signals
+gpio.PINMUX[i] = (uint32_t)[0, 1] // set the alternate channel io
 ...                               // specific IP function config...
 ```
 input operation:
